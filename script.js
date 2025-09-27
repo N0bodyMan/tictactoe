@@ -1,39 +1,56 @@
 const cells = document.querySelectorAll('.cell');
-const statusDisplay = document.getElementById('status');
+const statusDisplay = document.querySelector('#status .current-player'); // Выбираем span для динамического обновления
 const resetButton = document.getElementById('reset-button');
+const scoreXDisplay = document.getElementById('score-x');
+const scoreODisplay = document.getElementById('score-o');
 
 let gameActive = true;
 let currentPlayer = 'X';
-let gameState = ["", "", "", "", "", "", "", "", ""]; // Состояние игрового поля
+let gameState = ["", "", "", "", "", "", "", "", ""];
+let scores = { 'X': 0, 'O': 0 }; // НОВОЕ: Объект для хранения счета
 
-// Все возможные выигрышные комбинации (индексы клеток)
 const winningConditions = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
 ];
 
 // --- Функции для управления игрой ---
 
 /**
+ * Обновляет отображение текущего счета на доске.
+ */
+function updateScoreDisplay() {
+    scoreXDisplay.textContent = `X: ${scores['X']}`;
+    scoreODisplay.textContent = `O: ${scores['O']}`;
+}
+
+/**
+ * Инициализация игры при загрузке.
+ */
+function initializeGame() {
+    // Получаем счет из локального хранилища, если он там есть
+    const storedScores = localStorage.getItem('ticTacToeScores');
+    if (storedScores) {
+        scores = JSON.parse(storedScores);
+    }
+    updateScoreDisplay();
+    // Устанавливаем начального игрока в DOM
+    statusDisplay.textContent = currentPlayer;
+    statusDisplay.setAttribute('data-player', currentPlayer);
+}
+
+/**
  * Обрабатывает клик по клетке.
- * @param {Event} clickedCellEvent - Событие клика.
  */
 function handleCellClick(clickedCellEvent) {
     const clickedCell = clickedCellEvent.target;
     const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
 
-    // Проверяем, можно ли сделать ход: игра активна И клетка пуста
     if (gameState[clickedCellIndex] !== "" || !gameActive) {
         return;
     }
 
-    // Обновляем состояние игры и интерфейс
     gameState[clickedCellIndex] = currentPlayer;
     clickedCell.innerHTML = currentPlayer;
 
@@ -41,7 +58,7 @@ function handleCellClick(clickedCellEvent) {
 }
 
 /**
- * Проверяет, выиграл ли кто-то или ничья.
+ * Проверяет результат игры и обновляет счет.
  */
 function handleResultValidation() {
     let roundWon = false;
@@ -53,9 +70,7 @@ function handleResultValidation() {
         let b = gameState[winCondition[1]];
         let c = gameState[winCondition[2]];
 
-        if (a === '' || b === '' || c === '') {
-            continue; // Комбинация не полная
-        }
+        if (a === '' || b === '' || c === '') continue;
         if (a === b && b === c) {
             roundWon = true;
             winningCombo = winCondition;
@@ -64,25 +79,27 @@ function handleResultValidation() {
     }
 
     if (roundWon) {
-        statusDisplay.innerHTML = `Игрок ${currentPlayer} победил! 🎉`;
+        statusDisplay.parentNode.innerHTML = `Победитель: <span class="current-player" data-player="${currentPlayer}">${currentPlayer}</span>! 🎉`;
         gameActive = false;
 
-        // Выделение выигрышных клеток
+        // НОВОЕ: Обновляем счет и сохраняем его
+        scores[currentPlayer]++;
+        localStorage.setItem('ticTacToeScores', JSON.stringify(scores));
+        updateScoreDisplay();
+
         winningCombo.forEach(index => {
             cells[index].classList.add('winning-cell');
         });
         return;
     }
 
-    // Проверка на ничью (если нет пустых клеток и нет победителя)
     let roundDraw = !gameState.includes("");
     if (roundDraw) {
-        statusDisplay.innerHTML = `Ничья! 🤝`;
+        statusDisplay.parentNode.innerHTML = `Ничья! 🤝`;
         gameActive = false;
         return;
     }
 
-    // Если игра продолжается, меняем игрока
     handlePlayerChange();
 }
 
@@ -91,7 +108,8 @@ function handleResultValidation() {
  */
 function handlePlayerChange() {
     currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-    statusDisplay.innerHTML = `Ходит: ${currentPlayer}`;
+    // Обновляем текст и атрибут для стилей
+    statusDisplay.parentNode.innerHTML = `Ходит: <span class="current-player" data-player="${currentPlayer}">${currentPlayer}</span>`;
 }
 
 /**
@@ -101,7 +119,10 @@ function handleRestartGame() {
     gameActive = true;
     currentPlayer = 'X';
     gameState = ["", "", "", "", "", "", "", "", ""];
-    statusDisplay.innerHTML = `Ходит: ${currentPlayer}`;
+    
+    // Восстанавливаем DOM элемент статуса
+    const statusContainer = document.getElementById('status');
+    statusContainer.innerHTML = `Ходит: <span class="current-player" data-player="${currentPlayer}">${currentPlayer}</span>`;
 
     cells.forEach(cell => {
         cell.innerHTML = "";
@@ -112,3 +133,6 @@ function handleRestartGame() {
 // --- Обработчики событий ---
 cells.forEach(cell => cell.addEventListener('click', handleCellClick));
 resetButton.addEventListener('click', handleRestartGame);
+
+// Запуск при загрузке страницы
+initializeGame();
