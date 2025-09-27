@@ -20,10 +20,37 @@ h1 {
     color: #333;
 }
 
+/* НОВОЕ: Стили для табло счета */
+.score-board {
+    margin: 10px 0 20px;
+    font-size: 1.1em;
+    display: flex;
+    justify-content: space-around;
+    padding: 5px 0;
+    border-bottom: 2px solid #ccc;
+}
+
 #status {
     margin: 20px 0;
     font-size: 1.2em;
     font-weight: bold;
+}
+
+/* НОВОЕ: Визуальное выделение текущего игрока */
+.current-player {
+    padding: 2px 8px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.current-player[data-player="X"] {
+    background-color: #007bff; /* Синий для X */
+    color: white;
+}
+
+.current-player[data-player="O"] {
+    background-color: #28a745; /* Зеленый для O */
+    color: white;
 }
 
 .board {
@@ -50,8 +77,9 @@ h1 {
     background-color: #ddd;
 }
 
-.cell:active {
-    background-color: #ccc;
+.winning-cell {
+    background-color: #ffc107 !important; /* Желтый для победителя */
+    color: #333;
 }
 
 #reset-button {
@@ -59,7 +87,7 @@ h1 {
     padding: 10px 20px;
     font-size: 1em;
     cursor: pointer;
-    background-color: #007bff;
+    background-color: #dc3545; /* Красный для сброса */
     color: white;
     border: none;
     border-radius: 5px;
@@ -67,10 +95,5 @@ h1 {
 }
 
 #reset-button:hover {
-    background-color: #0056b3;
-}
-
-.winning-cell {
-    background-color: #28a745 !important;
-    color: white;
+    background-color: #c82333;
 }
