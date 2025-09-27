@@ -9,7 +9,14 @@
 <body>
     <div class="container">
         <h1>Крестики-Нолики</h1>
-        <div id="status">Ходит: X</div>
+
+        <div class="score-board">
+            <span id="score-x">X: 0</span>
+            <span id="score-o">O: 0</span>
+        </div>
+
+        <div id="status">Ходит: <span class="current-player" data-player="X">X</span></div>
+        
         <div class="board" id="board">
             <div class="cell" data-index="0"></div>
             <div class="cell" data-index="1"></div>
